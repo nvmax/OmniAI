@@ -48,16 +48,16 @@ async def startup_checks():
     logger.info("Starting Omni-Assistant Discord Bot...")
     logger.info(f"Configuration loaded: LM Studio at {config.lm_studio_url}")
     
-    # Check LM Studio connection
-    logger.info("Checking LM Studio connection...")
+    # Check LLM provider connection
+    logger.info("Checking LLM provider connection...")
     try:
-        health = await llm_manager.client.health_check()
+        health = await llm_manager.health_check()
         if health:
-            logger.info("[OK] LM Studio connection successful")
+            logger.info("[OK] LLM provider connection successful")
         else:
-            logger.warning("[WARNING] LM Studio health check failed - bot will still start but may have limited functionality")
+            logger.warning("[WARNING] LLM provider health check failed - bot will still start but may have limited functionality")
     except Exception as e:
-        logger.error(f"[ERROR] LM Studio connection error: {e}")
+        logger.error(f"[ERROR] LLM provider connection error: {e}")
         logger.warning("Bot will start but LLM functionality may be limited")
 
     # Check vector database
@@ -66,7 +66,9 @@ async def startup_checks():
         logger.info("[OK] Vector database initialized successfully")
     else:
         logger.warning("[WARNING] Vector database initialization failed - memory features may be limited")
-    
+
+
+
     # Check Discord configuration
     if not config.discord_bot_token:
         logger.error("[ERROR] Discord bot token not found in environment variables")
@@ -168,8 +170,8 @@ if __name__ == "__main__":
                Omni-Assistant
             Discord AI Bot v1.0
 
-      Powered by CrewAI & LM Studio
-      Local AI - Multi-Agent - Memory
+    Multi-Provider AI: LM Studio & Gemini
+    Intelligent Routing - Multi-Agent - Memory
     ==========================================
     """)
     

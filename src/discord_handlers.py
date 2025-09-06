@@ -12,12 +12,12 @@ from discord.ext import commands
 
 try:
     from .config import config
-    from .crew_orchestrator import crew_orchestrator
+    from .crew_orchestrator import multi_agent_orchestrator
     from .personalities import personality_manager
     from .memory_manager import memory_manager
 except ImportError:
     from config import config
-    from crew_orchestrator import crew_orchestrator
+    from crew_orchestrator import multi_agent_orchestrator
     from personalities import personality_manager
     from memory_manager import memory_manager
 
@@ -39,7 +39,7 @@ class DiscordBot(commands.Bot):
             help_command=None
         )
         
-        self.orchestrator = crew_orchestrator
+        self.orchestrator = multi_agent_orchestrator
         self.allowed_channels = set(config.discord_channel_ids) if config.discord_channel_ids else set()
         self.allowed_server = config.discord_server_id
         
@@ -224,7 +224,7 @@ class DiscordBot(commands.Bot):
 
                 logger.info(f"[{request_id}] Processing message from user {user_id}: {message.content[:50]}...")
 
-                # Process the message through the orchestrator
+                # Process the message through the orchestrator normally
                 response = await self.orchestrator.process_request(
                     user_message=message.content,
                     user_id=user_id,
@@ -257,6 +257,10 @@ class DiscordBot(commands.Bot):
                             await asyncio.sleep(0.5)
                 else:
                     logger.info(f"[{request_id}] Sending single response: {response[:100]}...")
+                    # Debug: Log the exact response being sent to Discord
+                    if '```' in response:
+                        logger.info(f"[{request_id}] CODE BLOCK DETECTED - Full response being sent to Discord:")
+                        logger.info(f"[{request_id}] {repr(response)}")
                     await message.channel.send(response)
 
                 logger.info(f"[{request_id}] Message processing completed")
@@ -420,6 +424,10 @@ class DiscordBot(commands.Bot):
             chunks.append(current_chunk)
 
         return chunks
+
+
+
+
 
 class PersonalitySelectionView(discord.ui.View):
     """View for personality selection with dropdown."""
@@ -717,6 +725,8 @@ class DiscordCommands:
                 db_status = "✅ Active" if memory_manager.chroma_client else "❌ Inactive"
             except Exception as e:
                 db_status = f"❌ Error: {str(e)[:30]}"
+
+
 
             # Bot info
             channel_count = len(self.bot.allowed_channels) if self.bot.allowed_channels else "All"

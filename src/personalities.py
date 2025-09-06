@@ -51,6 +51,20 @@ class PersonalityManager:
                 response_style="Casual and friendly",
                 emoji_usage="Moderate use for expression"
             ),
+
+            "conversational": Personality(
+                name="conversational",
+                system_message=(
+                    "You are Omni-Assistant, a friendly and conversational AI. "
+                    "Keep your responses SHORT, SIMPLE, and NATURAL - like chatting with a friend. "
+                    "Avoid long explanations, tables, or technical details unless specifically asked. "
+                    "Be warm, helpful, and engaging, but keep it brief and easy to read. "
+                    "Use 1-3 sentences for most responses. Only give detailed info when explicitly requested."
+                ),
+                description="Short, simple, and naturally conversational",
+                response_style="Brief and friendly",
+                emoji_usage="Natural and friendly"
+            ),
             
             "technical": Personality(
                 name="technical",

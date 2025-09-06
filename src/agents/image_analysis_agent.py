@@ -10,8 +10,27 @@ import io
 from typing import Dict, List, Optional, Any
 from PIL import Image
 import base64
+from crewai import Agent
+
+try:
+    from .base_agent import AgentFactory
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    from agents.base_agent import AgentFactory
 
 logger = logging.getLogger(__name__)
+
+class ImageAnalysisAgentManager:
+    """Manager for image analysis agent operations."""
+
+    def __init__(self):
+        self.image_analyzer = ImageAnalysisAgent()
+
+    def create_agent(self, user_id: str = "default") -> Agent:
+        """Create an image analysis agent."""
+        return AgentFactory.create_image_analysis_agent(user_id, tools=[])
 
 class ImageAnalysisAgent:
     """Agent for analyzing images and providing intelligent commentary."""
@@ -28,28 +47,38 @@ class ImageAnalysisAgent:
             # Try to import transformers for vision models
             from transformers import BlipProcessor, BlipForConditionalGeneration
             import torch
-            
-            logger.info("Loading BLIP vision model for image analysis...")
-            
-            # Use BLIP model for image captioning and analysis
-            model_name = "Salesforce/blip-image-captioning-base"
-            
-            self.processor = BlipProcessor.from_pretrained(model_name)
-            self.vision_model = BlipForConditionalGeneration.from_pretrained(model_name)
-            
+            import warnings
+
+        except ImportError:
+            logger.warning("Transformers library not available. Image analysis will use fallback method.")
+            self.model_loaded = False
+            return
+
+        try:
+            # Suppress processor warnings for cleaner output
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", message=".*use_fast.*")
+                warnings.filterwarnings("ignore", message=".*slow.*processor.*")
+
+                logger.info("Loading BLIP vision model for image analysis...")
+
+                # Use BLIP model for image captioning and analysis
+                model_name = "Salesforce/blip-image-captioning-base"
+
+                # Use fast processor for better performance (eliminates warning)
+                self.processor = BlipProcessor.from_pretrained(model_name, use_fast=True)
+                self.vision_model = BlipForConditionalGeneration.from_pretrained(model_name)
+
             # Move to GPU if available
             if torch.cuda.is_available():
                 self.vision_model = self.vision_model.cuda()
                 logger.info("Vision model loaded on GPU")
             else:
                 logger.info("Vision model loaded on CPU")
-            
+
             self.model_loaded = True
             logger.info("Image analysis agent initialized successfully")
-            
-        except ImportError:
-            logger.warning("Transformers library not available. Image analysis will use fallback method.")
-            self.model_loaded = False
+
         except Exception as e:
             logger.error(f"Failed to load vision model: {e}")
             logger.info("Image analysis will use fallback method")

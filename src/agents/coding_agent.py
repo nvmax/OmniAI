@@ -45,6 +45,10 @@ class CodingAgentManager:
         """Create a coding agent with all necessary tools."""
         tools = self.get_coding_tools()
         return AgentFactory.create_coding_agent(user_id, tools)
+
+    def create_agent(self, user_id: str = "default") -> Agent:
+        """Create a coding agent (alias for create_coding_agent)."""
+        return self.create_coding_agent(user_id)
     
     def analyze_coding_request(self, request: str) -> Dict[str, Any]:
         """Analyze a coding request to determine the best approach."""

@@ -45,6 +45,10 @@ class ResearchAgentManager:
         """Create a research agent with all necessary tools."""
         tools = self.get_research_tools()
         return AgentFactory.create_research_agent(user_id, tools)
+
+    def create_agent(self, user_id: str = "default") -> Agent:
+        """Create a research agent (alias for create_research_agent)."""
+        return self.create_research_agent(user_id)
     
     def analyze_research_query(self, query: str) -> dict:
         """Analyze a research query to determine the best approach."""

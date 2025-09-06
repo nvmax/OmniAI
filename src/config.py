@@ -25,16 +25,25 @@ class Config(BaseSettings):
         default_factory=lambda: os.getenv("DISCORD_CHANNEL_ID", "").split(",") if os.getenv("DISCORD_CHANNEL_ID") else []
     )
     
+    # LLM Provider Configuration
+    llm_provider: str = Field("lm_studio", env="LLM_PROVIDER")  # "lm_studio", "gemini", or "auto"
+
     # LM Studio Configuration
     lm_studio_host: str = Field("127.0.0.1", env="LM_STUDIO_HOST")
     lm_studio_port: int = Field(1234, env="LM_STUDIO_PORT")
     lm_studio_model: str = Field("local-model", env="LM_STUDIO_MODEL")
+
+    # Google Gemini Configuration
+    gemini_api_key: Optional[str] = Field(None, env="GEMINI_API_KEY")
+    gemini_model: str = Field("gemini-1.5-flash", env="GEMINI_MODEL")  # or "gemini-1.5-pro"
+    gemini_temperature: float = Field(0.7, env="GEMINI_TEMPERATURE")
+    gemini_max_tokens: int = Field(8192, env="GEMINI_MAX_TOKENS")
     
     # Vector Database Configuration
     vector_db_path: str = Field("./data/vector_db", env="VECTOR_DB_PATH")
     
     # Bot Configuration
-    default_bot_personality: str = Field("default", env="DEFAULT_BOT_PERSONALITY")
+    default_bot_personality: str = Field("conversational", env="DEFAULT_BOT_PERSONALITY")
     bot_name: str = Field("Omni-Assistant", env="BOT_NAME")
     
     # Logging Configuration
@@ -51,6 +60,8 @@ class Config(BaseSettings):
     research_max_tokens: int = Field(6000, env="RESEARCH_MAX_TOKENS")
     coding_max_tokens: int = Field(5000, env="CODING_MAX_TOKENS")
     general_max_tokens: int = Field(4000, env="GENERAL_MAX_TOKENS")
+
+
     
     class Config:
         env_file = ".env"

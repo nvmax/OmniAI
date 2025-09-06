@@ -64,11 +64,22 @@ class LocalLLM(LLM):
 
 class BaseAgentConfig:
     """Base configuration for all agents."""
-    
+
     def __init__(self, user_id: str = "default"):
         self.user_id = user_id
-        self.llm = LocalLLM()
+        self.llm = self._create_llm()
         self.personality = personality_manager.get_user_personality(user_id)
+
+    def _create_llm(self):
+        """Create an LLM instance that works with CrewAI."""
+        try:
+            # For now, just use LocalLLM to avoid dependency issues
+            # TODO: Add proper LangChain LLM integration when needed
+            return LocalLLM()
+
+        except Exception as e:
+            logger.warning(f"Failed to create LLM: {e}")
+            return LocalLLM()
     
     def create_agent(
         self,
@@ -153,10 +164,58 @@ class AgentFactory:
         )
     
     @staticmethod
+    def create_web_search_agent(user_id: str = "default", tools: List = None) -> Agent:
+        """Create a web search agent."""
+        config = BaseAgentConfig(user_id)
+
+        return config.create_agent(
+            role="Web Search Specialist",
+            goal=(
+                "Find current, accurate information from the web quickly and efficiently. "
+                "Focus on real-time data, current events, prices, weather, and other "
+                "time-sensitive information that requires web searches."
+            ),
+            backstory=(
+                "You are a web search specialist with access to real-time web browsing and "
+                "search capabilities. You excel at finding current information, verifying "
+                "facts from multiple sources, and providing specific details like addresses, "
+                "phone numbers, ratings, and prices. You focus on delivering accurate, "
+                "up-to-date information quickly."
+            ),
+            tools=tools or [],
+            verbose=True,
+            allow_delegation=False
+        )
+
+    @staticmethod
+    def create_image_analysis_agent(user_id: str = "default", tools: List = None) -> Agent:
+        """Create an image analysis agent."""
+        config = BaseAgentConfig(user_id)
+
+        return config.create_agent(
+            role="Image Analysis Specialist",
+            goal=(
+                "Analyze and understand visual content in images. Provide detailed descriptions, "
+                "identify objects and scenes, offer artistic commentary, and extract meaningful "
+                "information from visual data."
+            ),
+            backstory=(
+                "You are an image analysis specialist with advanced computer vision capabilities. "
+                "You can analyze images to identify objects, people, scenes, text, and artistic "
+                "elements. You provide detailed descriptions, technical analysis, and insightful "
+                "commentary about visual content, adapting your analysis style to match the "
+                "user's personality and needs."
+            ),
+            tools=tools or [],
+            verbose=True,
+            allow_delegation=False
+        )
+
+    @staticmethod
     def create_general_agent(user_id: str = "default", tools: List = None) -> Agent:
         """Create a general-purpose agent."""
         config = BaseAgentConfig(user_id)
-        
+
         return config.create_agent(
             role="General Assistant",
             goal=(
